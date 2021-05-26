@@ -1,21 +1,38 @@
-import java.awt.*;
-import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.awt.Color;
 
-public class PixelPool {
-    private BufferedImage baseImage,
-        currentImage;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedList;
+
+public class PixelPool implements TickObject {
+    private static BufferedImage baseImage;
+
+    private static LinkedList<SmartPixel> pixels = new LinkedList<>();
 
     public PixelPool(BufferedImage img) {
         setBaseImage(img);
     }
 
-    private void setCurrentImage(BufferedImage img)
+    public BufferedImage getCurrentImage()
     {
-        currentImage = img;
+        BufferedImage img = null;
+        img = new BufferedImage(baseImage.getWidth(),
+                        baseImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (Iterator<SmartPixel> iterator2 = pixels.iterator(); iterator2.hasNext();) {
+            SmartPixel pixel = iterator2.next();
+            //System.out.println(pixel.getX() + "x, " + pixel.getY() + "y" +
+            //        pixel.getColor().getRGB());
+            img.setRGB(pixel.getX(),pixel.getY(),pixel.getColor().getRGB());
+        }
+
+
+        return img;
     }
 
-
-    public BufferedImage getBaseImage()
+    public static BufferedImage getBaseImage()
     {
         return baseImage;
     }
@@ -23,26 +40,31 @@ public class PixelPool {
     public void setBaseImage(BufferedImage img)
     {
         baseImage = img;
-        setCurrentImage(copyImage(img));
+        pixels.clear();
+        for (int y = 0; y < img.getHeight(); y++) {
+            for (int x = 0; x < img.getWidth(); x++) {
+                //Retrieving contents of a pixel
+                int pixel = img.getRGB(x,y);
+                //Creating a Color object from pixel value
+                Color color = new Color(pixel, true);
+                //Retrieving the R G B values
+
+                pixels.add(new SmartPixel(x,y, color));
+
+
+                int red = color.getRed();
+                int green = color.getGreen();
+                int blue = color.getBlue();
+            }
+        }
     }
 
     public void tick()
     {
-        BufferedImage tempImage = copyImage(currentImage);
-
+            for (Iterator<SmartPixel> iterator2 = pixels.iterator(); iterator2.hasNext();) {
+                SmartPixel obj = iterator2.next();
+                obj.tick();
+            }
     }
 
-    private static BufferedImage copyImage(BufferedImage img)
-    {
-        BufferedImage copyOfImage =
-                new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
-        Graphics g = copyOfImage.createGraphics();
-        g.drawImage(img, 0, 0, null);
-        return copyOfImage;
-    }
-
-    public BufferedImage getCurrentImage()
-    {
-        return currentImage;
-    }
 }

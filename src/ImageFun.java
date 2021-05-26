@@ -32,12 +32,12 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
             }
             assert ex != null;
             ex.setVisible(true);
-
+            ex.run();
         });
     }
 
     public ImageFun() throws IOException {
-        running = false;
+        running = true;
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu =new JMenu("File");
         JMenuItem open_new_image = new JMenuItem(OPEN_IMAGE);
@@ -50,7 +50,8 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
 
-        BufferedImage img = loadNewImage();
+        //BufferedImage img = loadNewImage();
+        BufferedImage img = RandomImage.get();
         pixelPool = new PixelPool(img);
         if (img == null)
         {
@@ -60,26 +61,20 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
         }
 
         //System.out.println(h_padding);
+
         setJMenuBar(menuBar);
+
+        add(imageBox);
         renderImage(img);
         running = true;
-        //run();
+
     }
-
-
-
-
 
     private void renderImage(BufferedImage img) {
-        remove(imageBox);
         imageBox.setIcon(new ImageIcon(img));
+        imageBox.paintAll(imageBox.getGraphics());
         setSize(new Dimension(img.getWidth(),img.getHeight()+h_padding));
-        add(imageBox);
         pack();
-    }
-
-    private void loadImage(BufferedImage img)
-    {
 
     }
 
@@ -88,8 +83,6 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
      */
     private static BufferedImage fit(BufferedImage img)
     {
-
-
         Dimension screen_size
                 = Toolkit.getDefaultToolkit().getScreenSize();
 
@@ -188,7 +181,7 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
             return null;
         }
         BufferedImage baseImage = fit(tempImage);
-        loadImage(baseImage);
+        renderImage(baseImage);
         return baseImage;
     }
 
@@ -210,7 +203,7 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
             long now = System.nanoTime();
             delta += (now - lastTime) / ns;
             lastTime = now;
-            while(delta >= 1){
+            while(delta >= -5){
                 tick();
                 delta--;
             }
@@ -235,6 +228,9 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
 
     public void render()
     {
-        renderImage(pixelPool.getCurrentImage());
+        BufferedImage img = pixelPool.getCurrentImage();
+        //System.out.println(img);
+        revalidate();
+        renderImage(img);
     }
 }
