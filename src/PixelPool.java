@@ -7,13 +7,33 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class PixelPool implements TickObject {
+public class PixelPool  {
     private static BufferedImage baseImage;
 
-    private static LinkedList<SmartPixel> pixels = new LinkedList<>();
+    public static LinkedList<SmartPixel> pixels = new LinkedList<>();
 
     public PixelPool(BufferedImage img) {
         setBaseImage(img);
+    }
+
+    /**
+     * Checks for overlapping pixels.
+     * @param x
+     * @param y
+     * @param smartPixel
+     */
+    public static void scan(SmartPixel signalling_pixel) {
+        for (Iterator<SmartPixel> iterator2 = pixels.iterator(); iterator2.hasNext();) {
+            SmartPixel pixel = iterator2.next();
+            if (pixel == signalling_pixel)
+            {
+                continue;
+            } else if (pixel.overlaps(signalling_pixel)) {
+                signalling_pixel.collide(pixel);
+            }
+            //img.setRGB(pixel.getX(),pixel.getY(),pixel.getColor().getRGB());
+        }
+
     }
 
     public BufferedImage getCurrentImage()
@@ -41,6 +61,7 @@ public class PixelPool implements TickObject {
     {
         baseImage = img;
         pixels.clear();
+        int i = 0;
         for (int y = 0; y < img.getHeight(); y++) {
             for (int x = 0; x < img.getWidth(); x++) {
                 //Retrieving contents of a pixel
@@ -49,12 +70,13 @@ public class PixelPool implements TickObject {
                 Color color = new Color(pixel, true);
                 //Retrieving the R G B values
 
-                pixels.add(new SmartPixel(x,y, color));
+                pixels.add(new SmartPixel(x,y, color,i));
 
 
                 int red = color.getRed();
                 int green = color.getGreen();
                 int blue = color.getBlue();
+                i++;
             }
         }
     }

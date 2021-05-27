@@ -73,7 +73,7 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
     private void renderImage(BufferedImage img) {
         imageBox.setIcon(new ImageIcon(img));
         imageBox.paintAll(imageBox.getGraphics());
-        setSize(new Dimension(img.getWidth(),img.getHeight()+h_padding));
+        //setSize(new Dimension(img.getWidth(),img.getHeight()+h_padding));
         pack();
 
     }
@@ -203,7 +203,7 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
             long now = System.nanoTime();
             delta += (now - lastTime) / ns;
             lastTime = now;
-            while(delta >= -5){
+            while(delta >= 1){
                 tick();
                 delta--;
             }
