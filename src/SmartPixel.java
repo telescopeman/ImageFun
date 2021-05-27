@@ -25,7 +25,7 @@ public class SmartPixel {
     }
 
     public void tick() {
-        final int C = 367693;
+        //final int C = 367693;
 
         //velocity_y += ((float) 255*3 - getColor().getBlue()+getColor().getGreen()+getColor().getRed())/(255*1000);
         //velocity_y -= (float) color.getRed()/855;
@@ -55,7 +55,7 @@ public class SmartPixel {
 
         move();
 
-        ticks++;
+        //ticks++;
     }
 
     public boolean overlaps(SmartPixel other_pixel)

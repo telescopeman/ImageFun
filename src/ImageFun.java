@@ -17,6 +17,7 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
     private static final String OPEN_IMAGE = "Open Image";
     private final JLabel imageBox = new JLabel();
     private final PixelPool pixelPool;
+    private final JButton open_new_image;
 
     public volatile boolean running;
 
@@ -38,33 +39,39 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
 
     public ImageFun() throws IOException {
         running = true;
-        JMenuBar menuBar = new JMenuBar();
-        JMenu fileMenu =new JMenu("File");
-        JMenuItem open_new_image = new JMenuItem(OPEN_IMAGE);
-        open_new_image.addActionListener(this);
-        fileMenu.add(open_new_image);
-        menuBar.add(fileMenu);
-        h_padding = menuBar.getHeight();
+
+        setLayout(new BorderLayout());
         setTitle("Image");
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
 
         //BufferedImage img = loadNewImage();
         BufferedImage img = RandomImage.get();
-        pixelPool = new PixelPool(img);
         if (img == null)
         {
             dispose();
             System.exit(0);
-            return;
         }
+        pixelPool = new PixelPool(img);
 
-        //System.out.println(h_padding);
+        //menuBar = new JMenuBar();
+        setSize(new Dimension(500,500));
+        //JMenu fileMenu =new JMenu("File");
+        open_new_image = new JButton(OPEN_IMAGE);
+        open_new_image.addActionListener(this);
 
-        setJMenuBar(menuBar);
+        JPanel p = new JPanel();
+        p.add(open_new_image);
+        add(p,BorderLayout.NORTH);
+        //menuBar.add(fileMenu);
+        open_new_image.setVisible(true);
+        //setJMenuBar(menuBar);
+        //this.add(menuBar, BorderLayout.NORTH);
 
         add(imageBox);
+
+        h_padding = 0;
         renderImage(img);
         running = true;
 
@@ -72,9 +79,18 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
 
     private void renderImage(BufferedImage img) {
         imageBox.setIcon(new ImageIcon(img));
+
         imageBox.paintAll(imageBox.getGraphics());
-        //setSize(new Dimension(img.getWidth(),img.getHeight()+h_padding));
-        pack();
+        //menuBar.paintAll(menuBar.getGraphics());
+        //menuBar.updateUI();
+        open_new_image.paint(open_new_image.getGraphics());
+        open_new_image.setEnabled(true);
+        repaint();
+        revalidate();
+
+
+        //setSize(new Dimension(img.getWidth(),img.getHeight()+h_padding*2));
+        //pack();
 
     }
 
@@ -137,8 +153,9 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
     private static BufferedImage getNewImage() throws IOException {
         final JFileChooser fc = new JFileChooser();
         fc.addChoosableFileFilter(new ImageFilter());
+        fc.setAcceptAllFileFilterUsed(false);
         // Open the dialog using null as parent component if you are outside a
-        // Java Swing application otherwise provide the parent component instead
+        // Java Swing application otherwise provide the parent component instead.
         int returnVal = fc.showOpenDialog(null);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             // Retrieve the selected file
@@ -188,11 +205,6 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
     @Override
     public void run()
     {
-        while (!running) {
-            Thread.onSpinWait();
-            // wait for things to actually be set up
-        }
-
         long lastTime = System.nanoTime();
         double amountOfTicks = 60.0;
         double ns = 1000000000 / amountOfTicks;
@@ -230,6 +242,7 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
     {
         BufferedImage img = pixelPool.getCurrentImage();
         //System.out.println(img);
+        //repaint();
         revalidate();
         renderImage(img);
     }
