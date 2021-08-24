@@ -1,8 +1,6 @@
 // Java program to demonstrate creation of random pixel image
-import java.io.File;
 import java.io.IOException;
 import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
 
 public class RandomImage
 {
@@ -12,11 +10,8 @@ public class RandomImage
         int width = 640, height = 320;
 
         // Create buffered image object
-        BufferedImage img = null;
+        BufferedImage img;
         img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-
-        // file object
-        File f = null;
 
         // create random values pixel by pixel
         for (int y = 0; y < height; y++)
@@ -34,16 +29,6 @@ public class RandomImage
             }
         }
 
-        // write image
-//        try
-//        {
-//            f = new File("G:\\Out.jpg");
-//            ImageIO.write(img, "jpg", f);
-//        }
-//        catch(IOException e)
-//        {
-//            System.out.println("Error: " + e);
-//        }
         return img;
     }
 }
