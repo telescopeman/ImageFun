@@ -16,8 +16,8 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
     private static final int w_padding = 0;
     private static final String OPEN_IMAGE = "Open Image";
     private final JLabel imageBox = new JLabel();
-    private final PixelPool pixelPool;
     private final JButton open_new_image;
+    private final static boolean debug_mode = true;
 
     public volatile boolean running;
 
@@ -46,14 +46,19 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
 
-        //BufferedImage img = loadNewImage();
-        BufferedImage img = RandomImage.get();
+        BufferedImage img;
+        if (debug_mode)
+        {
+            img = RandomImage.get();
+        }
+        else
+            img = loadNewImage();
         if (img == null)
         {
             dispose();
             System.exit(0);
         }
-        pixelPool = new PixelPool(img);
+        PixelPool.setBaseImage(img);
 
         //menuBar = new JMenuBar();
         setSize(new Dimension(500,500));
@@ -87,6 +92,19 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
         open_new_image.setEnabled(true);
         repaint();
         revalidate();
+        imageBox.getInputMap().put(KeyStroke.getKeyStroke("N"),
+                "pressed");
+        imageBox.getActionMap().put("pressed",
+                new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            loadNewImage();
+                        } catch (IOException ioException) {
+                            ioException.printStackTrace();
+                        }
+                    }
+                });
 
 
         //setSize(new Dimension(img.getWidth(),img.getHeight()+h_padding*2));
@@ -174,14 +192,7 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
         {
 
             try {
-                BufferedImage img = loadNewImage();
-                if (img == null)
-                {
-                    // do nothing
-                    System.out.println("no");
-                    return;
-                }
-                renderImage(img);
+                loadNewImage();
 
             } catch (IOException ioException) {
                 ioException.printStackTrace();
@@ -235,12 +246,12 @@ public class ImageFun extends JFrame implements ActionListener, Runnable {
 
     public void tick()
     {
-        pixelPool.tick();
+        PixelPool.tick();
     }
 
     public void render()
     {
-        BufferedImage img = pixelPool.getCurrentImage();
+        BufferedImage img = PixelPool.getCurrentImage();
         //System.out.println(img);
         //repaint();
         revalidate();

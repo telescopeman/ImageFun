@@ -1,47 +1,57 @@
 import java.awt.Color;
-
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.lang.Math;
+//import java.util.Random;
 
 public class PixelPool  {
     private static BufferedImage baseImage;
 
-    public static LinkedList<SmartPixel> pixels = new LinkedList<>();
+    private static final LinkedList<Entity> entities = new LinkedList<>();
+    private static final LinkedList<Entity> death_queue = new LinkedList<>();
+    public static final int SCALE = 10;
+
+    private static boolean queue_full = false;
 
     public PixelPool(BufferedImage img) {
         setBaseImage(img);
     }
 
-    /**
-     * Checks for overlapping pixels.
-     * @param signalling_pixel
-     */
-    public static void scan(SmartPixel signalling_pixel) {
-        for (Iterator<SmartPixel> iterator2 = pixels.iterator(); iterator2.hasNext();) {
-            SmartPixel pixel = iterator2.next();
-            if (pixel == signalling_pixel)
-            {
-                continue;
-            } else if (pixel.overlaps(signalling_pixel)) {
-                signalling_pixel.collide(pixel);
-            }
-            //img.setRGB(pixel.getX(),pixel.getY(),pixel.getColor().getRGB());
-        }
-
-    }
-
-    public BufferedImage getCurrentImage()
+    public static BufferedImage getCurrentImage()
     {
         BufferedImage img = new BufferedImage(baseImage.getWidth(),
                         baseImage.getHeight(), BufferedImage.TYPE_INT_RGB);
-        for (SmartPixel pixel : pixels) {
-            img.setRGB(pixel.getX(), pixel.getY(), pixel.getColor().getRGB());
+        PVector wind = new PVector((float) 0.001,0);
+        PVector gravity = new PVector(0, (float) 0.02);
+        for (Entity e : death_queue)
+        {
+            entities.remove(e);
+            System.out.println("Success " + e.index);
         }
+        death_queue.clear();
 
-
+        for (Entity entity : entities) {
+            entity.render(img);
+            entity.applyForce(gravity);
+            //entity.applyForce(wind);
+        }
         return img;
+    }
+
+    public static void applyForce(Emitter source, AbstractForce MY_FORCE)
+    {
+        for (Entity entity : entities) {
+            if (entity != source) {
+                entity.applyForce(MY_FORCE.on(source, entity));
+            }
+        }
+    }
+
+    public static void remove(Entity e)
+    {
+        death_queue.add(e);
     }
 
     public static BufferedImage getBaseImage()
@@ -49,7 +59,7 @@ public class PixelPool  {
         return baseImage;
     }
 
-    public void setBaseImage(BufferedImage img)
+    public static void setBaseImage(BufferedImage img)
     {
         if (img == null)
         {
@@ -64,17 +74,22 @@ public class PixelPool  {
         }
 
         baseImage = img;
-        pixels.clear();
+        entities.clear();
         int i = 0;
         for (int y = 0; y < img.getHeight(); y++) {
             for (int x = 0; x < img.getWidth(); x++) {
+                if (!(x % SCALE ==0 && y % SCALE == 0))
+                {
+                    i++;
+                    continue;
+                }
                 //Retrieving contents of a pixel
                 int pixel = img.getRGB(x,y);
                 //Creating a Color object from pixel value
                 Color color = new Color(pixel, true);
                 //Retrieving the R G B values
 
-                pixels.add(new SmartPixel(x,y, color,i));
+                entities.add(new SmartPixel(x,y, i, color));
 
 
                 int red = color.getRed();
@@ -83,14 +98,17 @@ public class PixelPool  {
                 i++;
             }
         }
+        entities.add(new BlackHole(320,160,i,17));
+
     }
 
-    public void tick()
+
+
+    public static void tick()
     {
-            for (Iterator<SmartPixel> iterator2 = pixels.iterator(); iterator2.hasNext();) {
-                SmartPixel obj = iterator2.next();
-                obj.tick();
-            }
+        for (Entity obj : entities) {
+            obj.tick();
+        }
     }
 
 }
